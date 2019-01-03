@@ -14,13 +14,17 @@ public class Percolation {
   private WeightedQuickUnionUF uf;
   private boolean[] grid;
   private int BOARD_SIZE;
+  private int VIRTUAL_TOP_SITE;
+  private int VIRTUAL_BOTTOM_SITE;
 
   // create n-by-n grid, with all sites blocked
   public Percolation(int n) {
     if (n < 1) throw new IllegalArgumentException("the board must be at least 1x1");
 
     BOARD_SIZE = n;
-    uf = new WeightedQuickUnionUF(n * n);
+    VIRTUAL_TOP_SITE = n * n + 1;
+    VIRTUAL_BOTTOM_SITE = n * n + 2;
+    uf = new WeightedQuickUnionUF(n * n + 2);
     grid = new boolean[n * n];
   }
 
@@ -35,6 +39,7 @@ public class Percolation {
 
     openSpace(row, col);
     connectWithAdjacentOpenSpaces(row, col);
+    connectToVirtualSitesIfRelevant(row, col);
   }
 
   // is site (row, col) open?
@@ -52,28 +57,36 @@ public class Percolation {
 
     int index = toIndex(row, col);
 
-    return grid[index];
+    return uf.connected(index, VIRTUAL_TOP_SITE) || uf.connected(index, VIRTUAL_BOTTOM_SITE);
   }
 
   // number of open sites
   public int numberOfOpenSites() {
+    int openSites = 0;
+    for (var i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+      if (grid[i]) {
+        openSites += 1;
+      }
+    }
 
+    return openSites;
   }
 
   // does the system percolate?
   public boolean percolates() {
-
+    return uf.connected(VIRTUAL_TOP_SITE, VIRTUAL_BOTTOM_SITE);
   }
 
   // convert coordinates to a number (to find elements in our board array)
   private int toIndex(int row, int col) {
-    if (col = 1) {
+    if (col == 1) {
       return row - 1;
     }
 
     return (col - 1) * size + row - 1;
   }
 
+  // check to see if the supplied coordinates are not in the grid
   private boolean isOutOfBounds(int row, int col) {
     return (row < 1 || col < 1 || row > BOARD_SIZE || col > BOARD_SIZE);
   }
@@ -103,11 +116,26 @@ public class Percolation {
     }
   }
 
+  // connect with the spaces to the top, bottom, left and right of the specified coordinates
   private void connectWithAdjacentOpenSpaces(int row, int col) {
     connectOpenSpaces(row, col, row - 1, col);
     connectOpenSpaces(row, col, row + 1, col);
     connectOpenSpaces(row, col, row, col - 1);
     connectOpenSpaces(row, col, row, col + 1);
+  }
+
+  private void connectToVirtualSitesIfRelevant(int row, int col) {
+    if (!isOutOfBounds(row, col)) {
+      int index = toIndex(row, col);
+
+      if (row == 1) {
+        uf.union(index, VIRTUAL_TOP_SITE);
+      }
+
+      if (row == BOARD_SIZE) {
+        uf.union(index, VIRTUAL_BOTTOM_SITE);
+      }
+    }
   }
 
   // test client (optional)
