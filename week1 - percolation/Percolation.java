@@ -13,17 +13,17 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
   private WeightedQuickUnionUF uf;
   private boolean[] grid;
-  private int BOARD_SIZE;
-  private int VIRTUAL_TOP_SITE;
-  private int VIRTUAL_BOTTOM_SITE;
+  private int boardSize;
+  private int virtualTopSite;
+  private int virtualBottomSite;
 
   // create n-by-n grid, with all sites blocked
   public Percolation(int n) {
     if (n < 1) throw new IllegalArgumentException("the board must be at least 1x1");
 
-    BOARD_SIZE = n;
-    VIRTUAL_TOP_SITE = n * n + 1;
-    VIRTUAL_BOTTOM_SITE = n * n + 2;
+    boardSize = n;
+    virtualTopSite = n * n + 1;
+    virtualBottomSite = n * n + 2;
     uf = new WeightedQuickUnionUF(n * n + 2);
     grid = new boolean[n * n];
   }
@@ -57,13 +57,13 @@ public class Percolation {
 
     int index = toIndex(row, col);
 
-    return uf.connected(index, VIRTUAL_TOP_SITE) || uf.connected(index, VIRTUAL_BOTTOM_SITE);
+    return uf.connected(index, virtualTopSite) || uf.connected(index, virtualBottomSite);
   }
 
   // number of open sites
   public int numberOfOpenSites() {
     int openSites = 0;
-    for (var i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+    for (int i = 0; i < boardSize * boardSize; i++) {
       if (grid[i]) {
         openSites += 1;
       }
@@ -74,7 +74,7 @@ public class Percolation {
 
   // does the system percolate?
   public boolean percolates() {
-    return uf.connected(VIRTUAL_TOP_SITE, VIRTUAL_BOTTOM_SITE);
+    return uf.connected(virtualTopSite, virtualBottomSite);
   }
 
   // convert coordinates to a number (to find elements in our board array)
@@ -83,12 +83,12 @@ public class Percolation {
       return row - 1;
     }
 
-    return (col - 1) * size + row - 1;
+    return (col - 1) * boardSize + row - 1;
   }
 
   // check to see if the supplied coordinates are not in the grid
   private boolean isOutOfBounds(int row, int col) {
-    return (row < 1 || col < 1 || row > BOARD_SIZE || col > BOARD_SIZE);
+    return (row < 1 || col < 1 || row > boardSize || col > boardSize);
   }
 
   // make sure the supplied coordinates are valid, i.e. on the board
@@ -129,11 +129,11 @@ public class Percolation {
       int index = toIndex(row, col);
 
       if (row == 1) {
-        uf.union(index, VIRTUAL_TOP_SITE);
+        uf.union(index, virtualTopSite);
       }
 
-      if (row == BOARD_SIZE) {
-        uf.union(index, VIRTUAL_BOTTOM_SITE);
+      if (row == boardSize) {
+        uf.union(index, virtualBottomSite);
       }
     }
   }
